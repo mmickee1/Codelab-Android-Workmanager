@@ -18,6 +18,8 @@ class BlurWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
         makeStatusNotification("Blurring image", appContext)
         val resourceUri = inputData.getString(KEY_IMAGE_URI)
 
+        sleep()
+
         return try {
             if (TextUtils.isEmpty(resourceUri)) {
                 Timber.e("Invalid input uri")
