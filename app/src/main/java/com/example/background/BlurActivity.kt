@@ -19,7 +19,9 @@ package com.example.background
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.work.WorkInfo
 import com.bumptech.glide.Glide
 import com.example.background.databinding.ActivityBlurBinding
 
@@ -42,8 +44,27 @@ class BlurActivity : AppCompatActivity() {
         viewModel.imageUri?.let { imageUri ->
             Glide.with(this).load(imageUri).into(binding.imageView)
         }
+        viewModel.outputWorkInfos.observe(this, workInfoObserver())
 
         binding.goButton.setOnClickListener { viewModel.applyBlur(blurLevel) }
+    }
+
+    private fun workInfoObserver(): Observer<List<WorkInfo>> {
+        return Observer { listOfWorkInfo ->
+            if (listOfWorkInfo.isNullOrEmpty()) {
+                return@Observer
+            }
+
+            // We only care about the one output status.
+            // Every continuation has only one worker tagged TAG_OUTPUT
+            val workInfo = listOfWorkInfo[0]
+
+            if (workInfo.state.isFinished) {
+                showWorkFinished()
+            } else {
+                showWorkInProgress()
+            }
+        }
     }
 
     /**
