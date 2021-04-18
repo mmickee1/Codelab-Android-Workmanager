@@ -48,15 +48,22 @@ class BlurViewModel(application: Application) : AndroidViewModel(application) {
      * @param blurLevel The amount to blur the image
      */
     internal fun applyBlur(blurLevel: Int) {
-        val blurRequest = OneTimeWorkRequestBuilder<BlurWorker>()
-            .setInputData(createInputDataForUri())
-            .build()
-
         var continuation = workManager
             .beginWith(OneTimeWorkRequest.from(CleanupWorker::class.java))
 
-        continuation = continuation.then(blurRequest)
+        // Add WorkRequests to blur the image the number of times requested
+        for (i in 0 until blurLevel) {
+            val blurBuilder = OneTimeWorkRequestBuilder<BlurWorker>()
 
+            // Input the Uri if this is the first blur operation
+            // After the first blur operation the input will be the output of previous
+            // blur operations.
+            if (i == 0) {
+                blurBuilder.setInputData(createInputDataForUri())
+            }
+
+            continuation = continuation.then(blurBuilder.build())
+        }
         val saveFile = OneTimeWorkRequestBuilder<SaveImageToFileWorker>().build()
 
         continuation = continuation.then(saveFile)
