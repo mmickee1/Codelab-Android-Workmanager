@@ -33,9 +33,11 @@ class BlurViewModel(application: Application) : AndroidViewModel(application) {
     internal var imageUri: Uri? = null
     internal var outputUri: Uri? = null
     internal val outputWorkInfos: LiveData<List<WorkInfo>>
+    internal val progressWorkInfos: LiveData<List<WorkInfo>>
 
     init {
         outputWorkInfos = workManager.getWorkInfosByTagLiveData(TAG_OUTPUT)
+        progressWorkInfos = workManager.getWorkInfosByTagLiveData(TAG_PROGRESS)
     }
 
     private fun createInputDataForUri(): Data {
@@ -67,7 +69,7 @@ class BlurViewModel(application: Application) : AndroidViewModel(application) {
             if (i == 0) {
                 blurBuilder.setInputData(createInputDataForUri())
             }
-
+            blurBuilder.addTag(TAG_PROGRESS)
             continuation = continuation.then(blurBuilder.build())
         }
 
